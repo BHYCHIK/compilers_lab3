@@ -141,28 +141,32 @@ class Language(object):
     def __str__(self):
         return "Non-terminals: %s\nTerminals: %s\nRules: %s\nStart symbol: %s" % (self._nonterminals, self._terminals, self._rules, self._start_symbol)
 
-    
+    def build_parse_table(self, terminal_chain):
+        parse_table = [[set() for _ in range(0, len(terminal_chain) - i)] for i in range(0, len(terminal_chain))]
+        for i in range(0, len(terminal_chain)):
+            for rule in self._rules:
+                if terminal_chain[i] in rule.get_right_side():
+                    parse_table[i][0].add(rule.get_left_side())
+
+        for j in range(2, len(terminal_chain) + 1):
+            for i in range(1, len(terminal_chain) - j + 2):
+                print(i, j)
+                for k in range(1, j):
+                    for rule in self._rules:
+                        if len(rule.get_right_side()) != 2:
+                            continue
+                        B = rule.get_right_side()[0]
+                        C = rule.get_right_side()[1]
+                        if (B in parse_table[i - 1][k - 1]) and (C in parse_table[i + k - 1][j - k - 1]):
+                            parse_table[i - 1][j - 1].add(rule.get_left_side())
+
+        return parse_table
+
+
 language = Language(filename='grammer728.txt')
 print('Original grammer:')
 print(language)
 print('')
 print('')
-print('Grammers after split without reduction')
-new_grammers = language.split_grammer(('E', 'T'))
-for new_grammer in new_grammers:
-    print(new_grammer)
-    print('')
-print('')
-print('')
-print('Grammers after removing unnecessary nonterminals')
-for i in new_grammers:
-    i.remove_unnecessary_nonterminals()
-for i in new_grammers:
-    print(i)
-    print('')
-print('Grammers after removing unreachable symbols')
-for i in new_grammers:
-    i.remove_unreachable_symbols()
-for i in new_grammers:
-    print(i)
-    print('')
+parse_table = language.build_parse_table('abaab')
+print(parse_table)

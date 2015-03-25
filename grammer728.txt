@@ -1,0 +1,14 @@
+2
+a
+b
+2
+A
+S
+6
+S A A
+S A S
+S b
+A S A
+A A S
+A a
+S
