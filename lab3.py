@@ -163,10 +163,40 @@ class Language(object):
         return parse_table
 
 
+    def left_parsing(self, terminal_chain, parse_table):
+        def gen(i, j, A):
+            if j == 1:
+                for rule in self._rules:
+                    if (rule.get_right_side()[0] == terminal_chain[i - 1]) and (rule.get_left_side() == A):
+                        print(rule)
+                        return
+                #assert 0
+            for k in range(1, j):
+                for rule in self._rules:
+                    if len(rule.get_right_side()) != 2:
+                        continue
+                    if rule.get_left_side() != A:
+                        continue
+                    B = rule.get_right_side()[0]
+                    C = rule.get_right_side()[1]
+                    if (B in parse_table[i - 1][k - 1]) and (C in parse_table[i + k - 1][j - k - 1]):
+                        print(rule)
+                        gen(i, k, B)
+                        gen(i + k, j - k, C)
+                        return
+
+        if self._start_symbol not in parse_table[0][len(parse_table) - 1]:
+            print('Impossible terminal chain')
+
+        gen(1, len(terminal_chain), self._start_symbol)
+
+
 language = Language(filename='grammer728.txt')
 print('Original grammer:')
 print(language)
 print('')
 print('')
-parse_table = language.build_parse_table('abaab')
+terminal_chain = 'abaab'
+parse_table = language.build_parse_table(terminal_chain)
 print(parse_table)
+language.left_parsing(terminal_chain, parse_table)
