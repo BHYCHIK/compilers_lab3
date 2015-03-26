@@ -135,6 +135,25 @@ class Language(object):
         self._rules = list(filter(lambda x: x.get_all_symbols().issubset(previous_set), self._rules))
 
 
+    def delete_long_rules(self):
+        extra_term_num = 0
+        new_rules = []
+        new_nonterminals = []
+        for rule in self._rules:
+            if len(rule.get_right_side()) <= 2:
+                new_rules.append(rule)
+                continue
+            new_rules.append(Language.Rule("%s %s %s" % (rule.get_left_side(), rule.get_right_side()[0], "EXTRA_TERMINAL_%s" % extra_term_num)))
+            self._terminals.append("EXTRA_TERMINAL_%s" % extra_term_num)
+            extra_term_num = extra_term_num + 1
+            for i in range(1, len(rule.get_right_side()) - 2):
+                new_rules.append(Language.Rule("%s %s %s" % ("EXTRA_TERMINAL_%s" % extra_term_num - 1, rule.get_right_side()[i], "EXTRA_TERMINAL_%s" % extra_term_num)))
+                self._terminals.append("EXTRA_TERMINAL_%s" % extra_term_num)
+                extra_term_num = extra_term_num + 1
+            new_rules.append(Language.Rule("%s %s %s" % ("EXTRA_TERMINAL_%s" % (extra_term_num - 1, ), rule.get_right_side()[len(rule.get_right_side()) - 2], rule.get_right_side()[len(rule.get_right_side()) - 1])))
+        self._rules = new_rules
+
+
     def __repr__(self):
         return self.__str__()
     
@@ -170,7 +189,6 @@ class Language(object):
                     if (rule.get_right_side()[0] == terminal_chain[i - 1]) and (rule.get_left_side() == A):
                         print(rule)
                         return
-                #assert 0
             for k in range(1, j):
                 for rule in self._rules:
                     if len(rule.get_right_side()) != 2:
@@ -193,6 +211,11 @@ class Language(object):
 
 language = Language(filename='grammer728.txt')
 print('Original grammer:')
+print(language)
+print('')
+print('')
+print('Delete long rules:')
+language.delete_long_rules()
 print(language)
 print('')
 print('')
