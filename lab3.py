@@ -27,7 +27,7 @@ class Language(object):
 
 
         def get_all_symbols(self):
-            return set(self._from).union(set(self._to))
+            return set([self._from]).union(set(self._to))
 
         
         def get_splitted_copy(self, terminals_to_replace):
@@ -248,6 +248,12 @@ print('')
 print('')
 print('Delete chain rules:')
 language.delete_chain_rules()
+print(language)
+print('')
+print('')
+print('Delete extra symbols:')
+language.remove_unnecessary_nonterminals()
+language.remove_unreachable_symbols()
 print(language)
 print('')
 print('')
