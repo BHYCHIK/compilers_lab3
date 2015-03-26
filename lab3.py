@@ -218,6 +218,7 @@ class Language(object):
         return "Non-terminals: %s\nTerminals: %s\nRules: %s\nStart symbol: %s" % (self._nonterminals, self._terminals, self._rules, self._start_symbol)
 
     def build_parse_table(self, terminal_chain):
+        terminal_chain = terminal_chain.split(' ')
         parse_table = [[set() for _ in range(0, len(terminal_chain) - i)] for i in range(0, len(terminal_chain))]
         for i in range(0, len(terminal_chain)):
             for rule in self._rules:
@@ -226,7 +227,6 @@ class Language(object):
 
         for j in range(2, len(terminal_chain) + 1):
             for i in range(1, len(terminal_chain) - j + 2):
-                print(i, j)
                 for k in range(1, j):
                     for rule in self._rules:
                         if len(rule.get_right_side()) != 2:
@@ -240,6 +240,8 @@ class Language(object):
 
 
     def left_parsing(self, terminal_chain, parse_table):
+        terminal_chain = terminal_chain.split(' ')
+
         def gen(i, j, A):
             if j == 1:
                 for rule in self._rules:
@@ -293,7 +295,7 @@ print(language)
 print('')
 print('')
 
-terminal_chain = 'not a'
+terminal_chain = '( a + b ) * ( - a )'
 parse_table = language.build_parse_table(terminal_chain)
 print(parse_table)
 language.left_parsing(terminal_chain, parse_table)
