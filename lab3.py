@@ -224,6 +224,7 @@ class Language(object):
             for rule in self._rules:
                 if terminal_chain[i] in rule.get_right_side():
                     parse_table[i][0].add(rule.get_left_side())
+        print(parse_table)
 
         for j in range(2, len(terminal_chain) + 1):
             for i in range(1, len(terminal_chain) - j + 2):
@@ -292,10 +293,18 @@ print('')
 print('Normal Homskey form:')
 language.remake_double_terms()
 print(language)
-print('')
-print('')
 
-terminal_chain = '( a + b ) * ( - a )'
+terminal_chain = '( a + b ) * ( - a ) / pi'
 parse_table = language.build_parse_table(terminal_chain)
-print(parse_table)
+print('')
+print('')
+print('Parsing table')
+for i in range(0, len(terminal_chain.split(' '))):
+    for j in range(0, len(terminal_chain.split(' ')) - i):
+        print(i, j)
+        print(parse_table[i][j], )
+    print()
+print('')
+print('')
+print('Production')
 language.left_parsing(terminal_chain, parse_table)
