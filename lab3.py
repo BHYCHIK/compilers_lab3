@@ -136,21 +136,48 @@ class Language(object):
 
 
     def delete_long_rules(self):
-        extra_term_num = 0
+        extra_nonterm_num = 0
         new_rules = []
         new_nonterminals = []
         for rule in self._rules:
             if len(rule.get_right_side()) <= 2:
                 new_rules.append(rule)
                 continue
-            new_rules.append(Language.Rule("%s %s %s" % (rule.get_left_side(), rule.get_right_side()[0], "EXTRA_TERMINAL_%s" % extra_term_num)))
-            self._terminals.append("EXTRA_TERMINAL_%s" % extra_term_num)
-            extra_term_num = extra_term_num + 1
+            new_rules.append(Language.Rule("%s %s %s" % (rule.get_left_side(), rule.get_right_side()[0], "EXTRA_NONTERMINAL_%s" % extra_nonterm_num)))
+            self._nonterminals.append("EXTRA_NONTERMINAL_%s" % extra_nonterm_num)
+            extra_nonterm_num = extra_nonterm_num + 1
             for i in range(1, len(rule.get_right_side()) - 2):
-                new_rules.append(Language.Rule("%s %s %s" % ("EXTRA_TERMINAL_%s" % extra_term_num - 1, rule.get_right_side()[i], "EXTRA_TERMINAL_%s" % extra_term_num)))
-                self._terminals.append("EXTRA_TERMINAL_%s" % extra_term_num)
-                extra_term_num = extra_term_num + 1
-            new_rules.append(Language.Rule("%s %s %s" % ("EXTRA_TERMINAL_%s" % (extra_term_num - 1, ), rule.get_right_side()[len(rule.get_right_side()) - 2], rule.get_right_side()[len(rule.get_right_side()) - 1])))
+                new_rules.append(Language.Rule("%s %s %s" % ("EXTRA_NONTERMINAL_%s" % extra_nonterm_num - 1, rule.get_right_side()[i], "EXTRA_NONTERMINAL_%s" % extra_nonterm_num)))
+                self._nonterminals.append("EXTRA_NONTERMINAL_%s" % extra_nonterm_num)
+                extra_nonterm_num = extra_nonterm_num + 1
+            new_rules.append(Language.Rule("%s %s %s" % ("EXTRA_NONTERMINAL_%s" % (extra_nonterm_num - 1, ), rule.get_right_side()[len(rule.get_right_side()) - 2], rule.get_right_side()[len(rule.get_right_side()) - 1])))
+        self._rules = new_rules
+
+
+    def delete_chain_rules(self):
+        chain_pairs = [(A, A) for A in self._nonterminals]
+        found_new = True
+        while found_new:
+            found_new = False
+            new_chain_pairs = []
+            for chain_pair in chain_pairs:
+                for rule in self._rules:
+                    if (len(rule.get_right_side()) != 1) or (rule.get_right_side()[0] not in self._nonterminals):
+                        continue
+                    if (chain_pair[1] == rule.get_left_side()) and ((chain_pair[0], rule.get_right_side()[0]) not in chain_pairs):
+                        new_chain_pairs.append((chain_pair[0], rule.get_right_side()[0]))
+                        found_new = True
+            chain_pairs.extend(new_chain_pairs)
+
+        new_rules = []
+        for chain_pain in chain_pairs:
+            for rule in self._rules:
+                if ((len(rule.get_right_side()) == 1) and (rule.get_right_side()[0] in self._nonterminals)) or (chain_pain[1] != rule.get_left_side()):
+                    continue
+                new_rules.append(Language.Rule("%s %s" % (chain_pain[0], ' '.join(rule.get_right_side()))))
+        for rule in self._rules:
+            if (len(rule.get_right_side()) != 1) or (rule.get_right_side()[0] not in self._nonterminals):
+                new_rules.append(rule)
         self._rules = new_rules
 
 
@@ -219,6 +246,12 @@ language.delete_long_rules()
 print(language)
 print('')
 print('')
+print('Delete chain rules:')
+language.delete_chain_rules()
+print(language)
+print('')
+print('')
+
 terminal_chain = 'abaab'
 parse_table = language.build_parse_table(terminal_chain)
 print(parse_table)
