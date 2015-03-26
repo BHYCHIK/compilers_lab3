@@ -181,6 +181,36 @@ class Language(object):
         self._rules = new_rules
 
 
+    def remake_double_terms(self):
+        new_rules = []
+        placeholder = 0
+        for rule in self._rules:
+            if (len(rule.get_right_side()) != 2):
+                new_rules.append(rule)
+                continue
+
+            rule_str = rule.get_left_side() + ' '
+
+            if rule.get_right_side()[0] in self._terminals:
+                rule_str = rule_str + ("PLACEHOLDER_%s" % placeholder) + ' '
+                new_rules.append(Language.Rule("%s %s" % ("PLACEHOLDER_%s" % placeholder, rule.get_right_side()[0])))
+                self._nonterminals.append("PLACEHOLDER_%s" % placeholder)
+                placeholder = placeholder + 1
+            else:
+                rule_str = rule_str + rule.get_right_side()[0] + ' '
+
+            if rule.get_right_side()[1] in self._terminals:
+                rule_str = rule_str + ("PLACEHOLDER_%s" % placeholder)
+                new_rules.append(Language.Rule("%s %s" % ("PLACEHOLDER_%s" % placeholder, rule.get_right_side()[1])))
+                self._nonterminals.append("PLACEHOLDER_%s" % placeholder)
+                placeholder = placeholder + 1
+            else:
+                rule_str = rule_str + rule.get_right_side()[1]
+
+            new_rules.append(Language.Rule(rule_str))
+        self._rules = new_rules
+
+
     def __repr__(self):
         return self.__str__()
     
@@ -257,8 +287,13 @@ language.remove_unreachable_symbols()
 print(language)
 print('')
 print('')
+print('Normal Homskey form:')
+language.remake_double_terms()
+print(language)
+print('')
+print('')
 
-terminal_chain = 'abaab'
+terminal_chain = 'not a'
 parse_table = language.build_parse_table(terminal_chain)
 print(parse_table)
 language.left_parsing(terminal_chain, parse_table)
