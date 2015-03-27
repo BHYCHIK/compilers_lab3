@@ -294,14 +294,14 @@ print('Normal Homskey form:')
 language.remake_double_terms()
 print(language)
 
-terminal_chain = '( a + b ) * ( - a ) / pi'
+terminal_chain = 'not ( ( ( a + b ) * ( - a ) / ( pi * pi ) ) div ( b * b ) )'
 parse_table = language.build_parse_table(terminal_chain)
 print('')
 print('')
 print('Parsing table')
 for i in range(0, len(terminal_chain.split(' '))):
     for j in range(0, len(terminal_chain.split(' ')) - i):
-        print(i, j)
+        print(i + 1, j + 1)
         print(parse_table[i][j], )
     print()
 print('')
